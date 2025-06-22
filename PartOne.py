@@ -10,8 +10,9 @@ import pandas as pd
 from nltk.corpus import cmudict
 from nltk.tokenize import sent_tokenize, word_tokenize
 import re
-
-
+# progress_apply = pd.DataFrame.progress_apply 
+from tqdm import tqdm
+tqdm.pandas()
 
 
 
@@ -82,12 +83,15 @@ def read_novels(path=Path.cwd() / "texts" / "novels"):
 
 
 
-def parse(df, store_path=Path.cwd() / "pickles", out_name="parsed.pickle"):
+def parse(df, store_path=Path.cwd() / "pickles", out_name="named.pickle"):
     """Parses the text of a DataFrame using spaCy, stores the parsed docs as a column and writes 
     the resulting  DataFrame to a pickle file"""
     #used spaCy to parse the text and add a new column to the df.
-    df["parsed"] = df["text"].apply(nlp)
-    return df.to_pickles(store_path / out_name)
+    df["parsed"] = df["text"].progress_apply(nlp) #using tqdm to show progress in the notebook
+    #store the DataFrame to a pickle file
+    store_path.mkdir(parents=True, exist_ok=True)
+    df.to_pickle(store_path / out_name)
+    return df
 
 
 
@@ -143,13 +147,14 @@ if __name__ == "__main__":
     path = Path.cwd() / "p1-texts" / "novels"
     print(path)
     df = read_novels("/Users/burdzhuchaglayan/Desktop/Msci_DS/summer term/natural language processing/coursework needs to be submitted at 3rd of july/p1-texts/novels") # this line will fail until you have completed the read_novels function above.
-    print(df.head())
-    nltk.download("cmudict")
-    #parse(df)
     #print(df.head())
-    print(get_ttrs(df))
-    print(get_fks(df))
-    df = pd.read_pickle(Path.cwd() / "pickles" /"name.pickle")
+    nltk.download("cmudict")
+    parse(df, out_name="parsed.pickle")  # this line will fail until you have completed the parse function above.
+    
+   # print(get_ttrs(df))
+   # print(get_fks(df))
+    df = pd.read_pickle(Path.cwd() / "pickles" / "parsed.pickle")
+    print(df.head())
     # print(adjective_counts(df))
     """ 
     for i, row in df.iterrows():
