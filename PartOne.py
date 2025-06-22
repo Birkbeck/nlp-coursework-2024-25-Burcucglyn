@@ -1,10 +1,18 @@
 #Re-assessment template 2025
 
-# Note: The template functions here and the dataframe format for structuring your solution is a suggested but not mandatory approach. You can use a different approach if you like, as long as you clearly answer the questions and communicate your answers clearly.
+# Note: The template functions here and the dataframe format for structuring your solution is a suggested but not mandatory approach. 
+#You can use a different approach if you like, as long as you clearly answer the questions and communicate your answers clearly.
 
 import nltk
 import spacy
 from pathlib import Path
+import pandas as pd
+from nltk.corpus import cmudict
+from nltk.tokenize import sent_tokenize, word_tokenize
+import re
+
+
+
 
 
 nlp = spacy.load("en_core_web_sm")
