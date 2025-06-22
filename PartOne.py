@@ -31,27 +31,55 @@ def fk_level(text, d):
     Returns:
         float: The Flesch-Kincaid Grade Level of the text. (higher grade is more difficult)
     """
-    pass
+    
+    from nltk.tokenize import sent_tokenize, word_tokenize
+
+    #tokenize sentences and words in the text
+    sentences = sent_tokenize(text)
+    words = word_tokenize(text)
+    words_alpha = [w for w in words if w.isalpha()]
+
+    num_words = len(words_alpha)
+    num_sentences = len(sentences)
+    syllables = sum(count_syl(word, d) for word in words_alpha)
+
+    if num_words == 0 or num_sentences == 0:
+        return None
+    # Flesch-Kincaid Grade Level formula
+    fk_grade = 0.39 * (num_words / num_sentences) + 11.8 * (syllables / num_words) - 15.59
+    return fk_grade
 
 
 def count_syl(word, d):
-    """Counts the number of syllables in a word given a dictionary of syllables per word.
-    if the word is not in the dictionary, syllables are estimated by counting vowel clusters
-
-    Args:
-        word (str): The word to count syllables for.
-        d (dict): A dictionary of syllables per word.
-
-    Returns:
-        int: The number of syllables in the word.
-    """
-    pass
-
+    """Counts the number of syllables in a word given a dictionary of syllables per word."""
+    word = word.lower()
+    if word in d:
+        return len([ph for ph in d[word][0] if ph[-1].isdigit()])
+    else:
+        return len(re.findall(r'[aeiouy]+', word))
 
 def read_novels(path=Path.cwd() / "texts" / "novels"):
     """Reads texts from a directory of .txt files and returns a DataFrame with the text, title,
     author, and year"""
-    pass
+    data = []
+    path = Path(path)
+    files = list(path.glob('*.txt'))
+    for file in files:
+        filename = file.name
+        name = filename[:-4]  # removes the last 4 character before '.txt'
+        try:
+            title, author, year = name.rsplit('-', 2)
+            year = int(year)
+        except ValueError:
+            print(f"Skipping file (bad name format): {filename}")
+            continue
+        with open(file, 'r', encoding='utf-8') as f:
+            content = f.read()
+        data.append({'text': content, 'title': title, 'author': author, 'year': year})
+    df = pd.DataFrame(data)
+    df = df.sort_values('year').reset_index(drop=True)
+    return df
+
 
 
 def parse(df, store_path=Path.cwd() / "pickles", out_name="parsed.pickle"):
