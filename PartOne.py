@@ -15,6 +15,7 @@ from tqdm import tqdm
 tqdm.pandas()
 # import counter for counting word frequencies
 from collections import Counter
+import math #for pmi calculations
 
 
 
@@ -124,9 +125,35 @@ def get_fks(df):
     return results
 
 
-def subjects_by_verb_pmi(doc, target_verb):
-    """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
-    pass
+def subjects_by_verb_pmi(doc, target_verb, n=10):
+    """Extracts the most common subjects of a given verb in a parsed document, ordered by PMI. Returns a list."""
+    subj_counts = Counter()
+    verb_counts = Counter()
+    subj_verb_counts = Counter()
+    total_verbs = 0
+
+    for token in doc:
+        if token.pos_ == "VERB":
+            total_verbs += 1
+            verb_counts[token.lemma_] += 1
+            for child in token.children:  # dependency tree token.children
+                if child.dep_ in ("nsubj", "nsubjpass"):
+                    subj = child.text
+                    subj_counts[subj] += 1  # count the frequency of every subject
+                    subj_verb_counts[(subj, token.lemma_)] += 1  # count the frequency of each subject-verb pair
+
+    pmi_scores = []  # holds the pmi scores for each subject-verb pair
+    for (subj, verb), joint_count in subj_verb_counts.items():  # each subj-verb pair
+        if verb == target_verb:  # only considers if it's the target verb
+            p_subj = subj_counts[subj] / sum(subj_counts.values())  # probability of the subject
+            p_verb = verb_counts[verb] / total_verbs  # probability of the verb
+            p_joint = joint_count / total_verbs  # joint probability of the subject and verb
+            if p_subj > 0 and p_verb > 0 and p_joint > 0:  # to avoid division by zero
+                pmi = math.log2(p_joint / (p_subj * p_verb))  # calculate PMI
+                pmi_scores.append((subj, verb, pmi))  # store the subject, verb, and PMI score
+    # Sort by PMI score in descending order and return the top n
+    pmi_scores.sort(key=lambda x: x[2], reverse=True)
+    return pmi_scores[:n]  # returns the top n subject-verb pairs
 
 
 
@@ -185,15 +212,10 @@ if __name__ == "__main__":
         print(subjects_by_verb_count(row["parsed"], "hear"))  # Change "hear" to any verb you want to test
         print("\n")
 
-    """ 
-    for i, row in df.iterrows():
-        print(row["title"])
-        print(subjects_by_verb_count(row["parsed"]))
-        print("\n")
-
+    #test subjects_by_verb_pmi
     for i, row in df.iterrows():
         print(row["title"])
         print(subjects_by_verb_pmi(row["parsed"], "hear"))
         print("\n")
-    """
+
 
