@@ -85,7 +85,11 @@ def read_novels(path=Path.cwd() / "texts" / "novels"):
 def parse(df, store_path=Path.cwd() / "pickles", out_name="parsed.pickle"):
     """Parses the text of a DataFrame using spaCy, stores the parsed docs as a column and writes 
     the resulting  DataFrame to a pickle file"""
-    pass
+    #used spaCy to parse the text and add a new column to the df.
+    df["parsed"] = df["text"].apply(nlp)
+    return df.to_pickles(store_path / out_name)
+
+
 
 
 def nltk_ttr(text):
@@ -145,7 +149,7 @@ if __name__ == "__main__":
     #print(df.head())
     print(get_ttrs(df))
     print(get_fks(df))
-    #df = pd.read_pickle(Path.cwd() / "pickles" /"name.pickle")
+    df = pd.read_pickle(Path.cwd() / "pickles" /"name.pickle")
     # print(adjective_counts(df))
     """ 
     for i, row in df.iterrows():
