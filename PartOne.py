@@ -132,7 +132,18 @@ def subjects_by_verb_pmi(doc, target_verb):
 
 def subjects_by_verb_count(doc, verb):
     """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
-    pass
+    subjects = []
+    for token in doc:
+        if token.lemma_ == verb and token.pos_ == "VERB":
+            # Check if the token is a verb and has a subject dependency
+            for child in token.children: #dependency tree token.children
+                if child.dep_ in ("nsubj", "nsubjpass"): #dependency tree checks if the child is a subject or passive subject
+                    # If the child is a subject, add the subject phrase to the list
+                    subj_phrase = " ".join([t.text for t in child.subtree])
+                    # Count the frequency of each subject phrase and return the most common ones    
+                    subjects.append(subj_phrase)
+    return Counter(subjects).most_common(10) # Returns the 10 most common subjects as a list of tuples (subject, count)
+
 
 
 
@@ -140,7 +151,7 @@ def adjective_counts(doc):
     """Extracts the most common adjectives in a parsed document. Returns a list of tuples."""
     adjs =[token.text for token in doc if token.pos_ == "ADJ"] #spacy tokenizationm adj checks if the token is an adjective and than gets the text of the token
     # tuples for Counting the frequency of adj.
-    return Counter(adjs).most_common(10)
+    return Counter(adjs).most_common(10) #returns the 10 most common adjectives as a list of tuples (adj, count)
 
 
 
@@ -163,9 +174,15 @@ if __name__ == "__main__":
     # print(adjective_counts(df))
 
     #test adjective_counts
+    # for i, row in df.iterrows():
+    #     print(row["title"])
+    #     print(adjective_counts(row["parsed"]))
+    #     print("\n")
+    
+    #test subjects_by_verb_count
     for i, row in df.iterrows():
         print(row["title"])
-        print(adjective_counts(row["parsed"]))
+        print(subjects_by_verb_count(row["parsed"], "hear"))  # Change "hear" to any verb you want to test
         print("\n")
 
     """ 
