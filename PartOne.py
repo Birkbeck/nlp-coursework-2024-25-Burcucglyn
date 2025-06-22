@@ -90,7 +90,10 @@ def parse(df, store_path=Path.cwd() / "pickles", out_name="parsed.pickle"):
 
 def nltk_ttr(text):
     """Calculates the type-token ratio of a text. Text is tokenized using nltk.word_tokenize."""
-    pass
+    from nltk.tokenize import word_tokenize
+    tokens = word_tokenize(text)
+    return len(set(tokens))/ len(tokens) if tokens else None
+    
 
 
 def get_ttrs(df):
@@ -106,7 +109,8 @@ def get_fks(df):
     results = {}
     cmudict = nltk.corpus.cmudict.dict()
     for i, row in df.iterrows():
-        results[row["title"]] = round(fk_level(row["text"], cmudict), 4)
+        score = fk_level(row["text"], cmudict)
+        results[row["title"]] = round(score, 4) if score is not None else 0
     return results
 
 
@@ -132,15 +136,15 @@ if __name__ == "__main__":
     """
     uncomment the following lines to run the functions once you have completed them
     """
-    #path = Path.cwd() / "p1-texts" / "novels"
-    #print(path)
-    #df = read_novels(path) # this line will fail until you have completed the read_novels function above.
-    #print(df.head())
-    #nltk.download("cmudict")
+    path = Path.cwd() / "p1-texts" / "novels"
+    print(path)
+    df = read_novels("/Users/burdzhuchaglayan/Desktop/Msci_DS/summer term/natural language processing/coursework needs to be submitted at 3rd of july/p1-texts/novels") # this line will fail until you have completed the read_novels function above.
+    print(df.head())
+    nltk.download("cmudict")
     #parse(df)
     #print(df.head())
-    #print(get_ttrs(df))
-    #print(get_fks(df))
+    print(get_ttrs(df))
+    print(get_fks(df))
     #df = pd.read_pickle(Path.cwd() / "pickles" /"name.pickle")
     # print(adjective_counts(df))
     """ 
