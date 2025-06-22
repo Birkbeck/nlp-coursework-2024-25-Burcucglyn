@@ -13,6 +13,8 @@ import re
 # progress_apply = pd.DataFrame.progress_apply 
 from tqdm import tqdm
 tqdm.pandas()
+# import counter for counting word frequencies
+from collections import Counter
 
 
 
@@ -136,7 +138,10 @@ def subjects_by_verb_count(doc, verb):
 
 def adjective_counts(doc):
     """Extracts the most common adjectives in a parsed document. Returns a list of tuples."""
-    pass
+    adjs =[token.text for token in doc if token.pos_ == "ADJ"] #spacy tokenizationm adj checks if the token is an adjective and than gets the text of the token
+    # tuples for Counting the frequency of adj.
+    return Counter(adjs).most_common(10)
+
 
 
 
@@ -149,17 +154,24 @@ if __name__ == "__main__":
     df = read_novels("/Users/burdzhuchaglayan/Desktop/Msci_DS/summer term/natural language processing/coursework needs to be submitted at 3rd of july/p1-texts/novels") # this line will fail until you have completed the read_novels function above.
     #print(df.head())
     nltk.download("cmudict")
-    parse(df, out_name="parsed.pickle")  # this line will fail until you have completed the parse function above.
+    # parse(df, out_name="parsed.pickle")  # this line will fail until you have completed the parse function above.
     
    # print(get_ttrs(df))
    # print(get_fks(df))
     df = pd.read_pickle(Path.cwd() / "pickles" / "parsed.pickle")
-    print(df.head())
+    # print(df.head())
     # print(adjective_counts(df))
+
+    #test adjective_counts
+    for i, row in df.iterrows():
+        print(row["title"])
+        print(adjective_counts(row["parsed"]))
+        print("\n")
+
     """ 
     for i, row in df.iterrows():
         print(row["title"])
-        print(subjects_by_verb_count(row["parsed"], "hear"))
+        print(subjects_by_verb_count(row["parsed"]))
         print("\n")
 
     for i, row in df.iterrows():
