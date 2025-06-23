@@ -53,3 +53,13 @@ def filter_parties(df):
 df = filter_parties(df)
 print(df['party'].unique())  # Should only show the main 4 parties
 print(df.shape)
+
+'''A) III. Remove any rows where the value in the speech_class column is not 'Speech'.'''
+def filter_speech(df):
+    """Filters the dataframe to keep only rows where speech_class is 'Speech'."""
+    df = df[df['speech_class'] == 'Speech']  # Keep only rows where speech_class is 'Speech'
+    return df
+
+# Check if the function is working
+df = filter_speech(df)
+print(df['speech_class'].unique())
