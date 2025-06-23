@@ -33,7 +33,7 @@ print(df.head())
 '''A) II. Remove any rows where the value of the party column is not one of the main 4 party and remove the 'Speaker' value.'''
 
 #Print the parties in the party column to see which ones are present
-print(df['party'].unique())
+#print(df['party'].unique())
 
 ''' output: ['Labour' 'Conservative' 'Liberal Democrat'
  'Speaker' 'Democratic Unionist Party' 'Independent' 
@@ -46,9 +46,10 @@ def filter_parties(df):
     #to see the party column values used the print(df['party'].unique()) function
     main_parties = ['Labour', 'Conservative', 'Liberal Democrat', 'Independent']
     #remove rows where the party is not in the main 4 and remove the 'Speaker' value
-    df = df[df['party'] != 'Speaker']
+    df = df[df['party'].isin(main_parties)] #isin pandas methods to filter the df 
     return df
 
 # Check if the function is working
 df = filter_parties(df)
+print(df['party'].unique())  # Should only show the main 4 parties
 print(df.shape)
