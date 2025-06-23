@@ -5,6 +5,10 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split   
 
+#random forest and SVM for C
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, f1_score
+from sklearn.svm import SVC
 
 '''A) I. Read the hansard40000.csv dataset in the texts directory into a dataframe.
     - Change the 'Labour (Co-op)' value in the 'party' column to 'Labour'.
@@ -92,3 +96,34 @@ print("X_test shape:", X_test.shape)
 print("y_train shape:", y_train.shape)
 print("y_test shape:", y_test.shape)
 print("First 10 feature names:", feature_names[:10])
+
+''''c) Train RandomForest (with n_estimators=300) and SVM with linear kernel clas-
+sifiers on the training set, and print the scikit-learn macro-average f1 score and
+classification report for each classifier on the test set. The label that you are
+trying to predict is the ‘party’ value.'''
+
+
+def classifiers_models (X_train, X_test, y_train, y_test):
+    """
+    Trains RandomForest and SVM classifiers on the training set and prints the macro-average f1 score and classification report.
+    Already have X_train, X_test, y_train, y_test from your vectorization step, so won't split again
+    """
+
+    # Random Forest
+    rf_model = RandomForestClassifier(n_estimators=300, random_state=26)
+    rf_model.fit(X_train, y_train)
+    rf_predictions = rf_model.predict(X_test)
+    rf_f1_score = f1_score(y_test, rf_predictions, average='macro')
+    print("Random Forest Macro F1 Score:", rf_f1_score)
+    print("Random Forest Classification Report:\n", classification_report(y_test, rf_predictions)) 
+
+    # Linear SVM
+    svm_model = SVC(kernel='linear', random_state=26)
+    svm_model.fit(X_train, y_train)
+    svm_predictions = svm_model.predict(X_test)
+    svm_f1_score = f1_score(y_test, svm_predictions, average='macro')
+    print("SVM Macro F1 Score:", svm_f1_score)
+    print("SVM Classification Report:\n", classification_report(y_test, svm_predictions))
+
+# Usage:
+classifiers_models(X_train, X_test, y_train, y_test)
