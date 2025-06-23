@@ -1,17 +1,9 @@
-'''Read the hansard40000.csv dataset in the texts directory into a dataframe. Sub-
-set and rename the dataframe as follows:
-i. rename the ‘Labour (Co-op)’ value in ‘party’ column to ‘Labour’, and
-then:
-ii. remove any rows where the value of the ‘party’ column is not one of the
-four most common party names, and remove the ‘Speaker’ value.
-iii. remove any rows where the value in the ‘speech_class’ column is not
-‘Speech’.
-iv. remove any rows where the text in the ‘speech’ column is less than 1000
-characters long.
-Print the dimensions of the resulting dataframe using the shape method.'''
-
 from pathlib import Path
 import pandas as pd
+
+#vectorization and splitting for B
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split   
 
 
 '''A) I. Read the hansard40000.csv dataset in the texts directory into a dataframe.
@@ -73,3 +65,23 @@ def filter_speech_length(df):
 # Check if the function is working
 df = filter_speech_length(df)
 print(df.shape)  # Print the shape of the dataframe to see how many rows are left
+
+
+
+''' B) Vectorise the speeches. Omitting English stopwords and setting max_features=30000. Split the data into a train and test set, using stratified sampling, with a
+random_state = 26.'''
+
+def vectorize_speeches(df):
+    """Vectorizes the speeches using TfidfVectorizer and splits the data into train and test sets."""
+    vectorizer = TfidfVectorizer(
+        sublinear_tf=True, max_df=0.5, min_df=5, stop_words="english", max_features=3000
+    )
+    X = vectorizer.fit_transform(df['speech'])
+    y = df['party']
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=26, stratify=y
+    )
+    feature_names = vectorizer.get_feature_names_out()
+    return X_train, X_test, y_train, y_test, feature_names
+
+X_train, X_test, y_train, y_test, feature_names = vectorize_speeches(df)
