@@ -17,9 +17,16 @@ from sklearn.naive_bayes import MultinomialNB
 
 #for custom tokenizer in E
 import spacy
-nlp = spacy.load("en_core_web_sm")
+nlp = spacy.load("en_core_web_sm", disable=["parser", "ner", "tagger"])
 
+import re
+from spacy.lang.en.stop_words import STOP_WORDS
 
+def custom_tokenizer(text):
+    return [token for token in re.findall(r'\b\w\w+\b', text.lower()) if token not in STOP_WORDS]
+
+from tqdm import tqdm
+tqdm.pandas()
 
 '''A) I. Read the hansard40000.csv dataset in the texts directory into a dataframe.
     - Change the 'Labour (Co-op)' value in the 'party' column to 'Labour'.
@@ -80,6 +87,12 @@ def filter_speech_length(df):
 # Check if the function is working
 df = filter_speech_length(df)
 print(df.shape)  # Print the shape of the dataframe to see how many rows are left
+
+'''Helper function implementation for C, D, and E to splitting the raw text and labels into train and test sets'''
+
+def splitdf(X, y, test_size = 0.2, random_state = 26):
+    """Splits the dataframe into train and test sets."""
+    return train_test_split(X, y, test_size=test_size, random_state=random_state, stratify=y)
 
 
 
@@ -205,16 +218,21 @@ def pipe_train_model(X_train, X_test, y_train, y_test, ngram_range=(1,1), tokeni
     # set zero_division=0 to avoid UndefinedMetricWarning
     print("SVM Classification Report:\n", classification_report(y_test, svm_preds, zero_division=0))
 
+# passing split the raw text and labels for pipeline usage par D and E 
+X = df['speech']
+y = df['party']
+X_train_text, X_test_text, y_train, y_test = splitdf(X, y)
+
 '''d) Adjust the parameters of the Tfidfvectorizer so that unigrams, bi-grams and
 tri-grams will be considered as features, limiting the total number of features to
 3000. Print the classification report as in 2(c) again using these parameters. '''
 
-'''in this part I will adjust the code I created on part B and C to include unigrams, bi-grams and tri-grams as features, to order to do that i will change the ngram_range parameter of TfidfVectorizer to (1, 3) which means it will consider unigrams, bi-grams and tri-grams as features.'''
+'''in this part I will adjust the code I created on part B and C to include unigrams, bi-grams and tri-grams as features, to order to do that I will change the ngram_range parameter of TfidfVectorizer to (1, 3) which means it will consider unigrams, bi-grams and tri-grams as features.'''
 
 #added ngram_range(1,3) parameter to the vectorization step in the pipe_train_model function now it needs to be called again without writing a new func. 
 
 print("\n--- Part D: ngram_range (1,3) (Using unigrams, bigrams, and trigrams as features) ---\n")
-pipe_train_model(X_train, X_test, y_train, y_test, ngram_range=(1, 3))
+pipe_train_model(X_train_text, X_test_text, y_train, y_test, ngram_range=(1, 3))
 
 ''' E) Implement a new custom tokenizer and pass it to the tokenizer argument of
 Tfidfvectorizer. You can use this function in any way you like to try to achieve
@@ -225,20 +243,10 @@ will be awarded both for a high overall classification performance, and a good
 trade-off between classification performance and efficiency (i.e., using fewer pa-
 rameters).'''
 
-def custom_tokenizer(text):
-    doc = nlp(text.lower())
-    return [token.text for token in doc if not token.is_stop and not token.is_punct]
+# Example: apply tqdm to see progress
+#X_train_text.progress_apply(lambda x: custom_tokenizer(x))
 
-#Now I will use pipe_train_model function to train the models with the custom tokenizer
+# Now I will use pipe_train_model function to train the models with the custom tokenizer
 print("\n--- Part E: Custom Tokenizer (Using Spacy) ---\n")
-pipe_train_model(X_train, X_test, y_train, y_test, ngram_range=(1, 2))  # Using the custom tokenizer with n-grams (1,2)
-
-# Split the raw text and labels, not the vectorized features
-X = df['speech']
-y = df['party']
-X_train_text, X_test_text, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=26, stratify=y
-)
-
-pipe_train_model(X_train_text, X_test_text, y_train, y_test, ngram_range=(1, 3))
+pipe_train_model(X_train_text, X_test_text, y_train, y_test, ngram_range=(1, 2), tokenizer=custom_tokenizer)
 
