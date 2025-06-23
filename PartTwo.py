@@ -177,7 +177,7 @@ rf_pipe = Pipeline([
 rf_pipe.fit(X_train, y_train)
 rf_preds = rf_pipe.predict(X_test)
 print("Random Forest Pipeline Macro F1:", f1_score(y_test, rf_preds, average='macro'))
-print("Random Forest Classification Report:\n", classification_report(y_test, rf_preds))
+print("Random Forest Classification Report:\n", classification_report(y_test, rf_preds, zero_division=0))
 
 
 # SVM Pipeline with SMOTE
@@ -190,4 +190,4 @@ svm_pipe = Pipeline([
 svm_pipe.fit(X_train, y_train)
 svm_preds = svm_pipe.predict(X_test)
 print("SVM Pipeline Macro F1:", f1_score(y_test, svm_preds, average='macro'))
-print("SVM Classification Report:\n", classification_report(y_test, svm_preds))
+print("SVM Classification Report:\n", classification_report(y_test, svm_preds, zero_division=0))
