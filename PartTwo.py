@@ -160,34 +160,50 @@ is done correctly.
 
 ''' Trains RandomForest and SVM classifiers using a pipeline with SMOTE for oversampling with
 the training set, and prints the macro-average f1 score and classification report.'''
-   
-# Prepare data: X is the speech text, y is the party label
-X = df['speech']
-y = df['party']
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=26, stratify=y
-)
-# Random Forest Pipeline
-rf_pipe = Pipeline([
-    ('tfidf', TfidfVectorizer(
-        sublinear_tf=True, max_df=0.5, min_df=5, stop_words="english", max_features=3000)),
-    ('smote', SMOTE(random_state=26)), #added smote for oversampling
-    ('clf', RandomForestClassifier(n_estimators=300, class_weight='balanced', random_state=26))
-])
-rf_pipe.fit(X_train, y_train)
-rf_preds = rf_pipe.predict(X_test)
-print("Random Forest Pipeline Macro F1:", f1_score(y_test, rf_preds, average='macro'))
-print("Random Forest Classification Report:\n", classification_report(y_test, rf_preds, zero_division=0))
 
 
-# SVM Pipeline with SMOTE
-svm_pipe = Pipeline([
-    ('tfidf', TfidfVectorizer(
-        sublinear_tf=True, max_df=0.5, min_df=5, stop_words="english", max_features=3000)),
-    ('smote', SMOTE(random_state=26)), #added smote for oversampling
-    ('clf', SVC(kernel='linear', class_weight='balanced', random_state=26))
-])
-svm_pipe.fit(X_train, y_train)
-svm_preds = svm_pipe.predict(X_test)
-print("SVM Pipeline Macro F1:", f1_score(y_test, svm_preds, average='macro'))
-print("SVM Classification Report:\n", classification_report(y_test, svm_preds, zero_division=0))
+def pipe_train_model (X_train, X_test, y_train, y_test, ngram_range=(1,1)):
+    """Trains RandomForest and SVM pipelines with given ngram_range and prints classification reports."""  
+    # Random Forest Pipeline
+    rf_pipe = Pipeline([
+        ('tfidf', TfidfVectorizer(
+            ngram_range = ngram_range, #add this line to include n-grams and re-use the code part D
+            sublinear_tf=True, max_df=0.5, min_df=5, stop_words="english", max_features=3000)),
+        ('smote', SMOTE(random_state=26)), #added smote for oversampling
+        ('clf', RandomForestClassifier(n_estimators=300, class_weight='balanced', random_state=26))
+    ])
+    rf_pipe.fit(X_train, y_train)
+    rf_preds = rf_pipe.predict(X_test)
+    print("Random Forest Pipeline Macro F1:", f1_score(y_test, rf_preds, average='macro'))
+    #set zero_division=0 to avoid UndefinedMetricWarning
+    print("Random Forest Classification Report:\n", classification_report(y_test, rf_preds, zero_division=0))
+
+
+    # SVM Pipeline with SMOTE
+    svm_pipe = Pipeline([
+        ('tfidf', TfidfVectorizer(
+            ngram_range=ngram_range, #add this line to include n-grams and re-use the code part D
+            sublinear_tf=True, max_df=0.5, min_df=5, stop_words="english", max_features=3000)),
+        ('smote', SMOTE(random_state=26)), #added smote for oversampling
+        ('clf', SVC(kernel='linear', class_weight='balanced', random_state=26))
+    ])
+    svm_pipe.fit(X_train, y_train)
+    svm_preds = svm_pipe.predict(X_test)
+    print("SVM Pipeline Macro F1:", f1_score(y_test, svm_preds, average='macro'))
+    #set zero_division=0 to avoid UndefinedMetricWarning
+    print("SVM Classification Report:\n", classification_report(y_test, svm_preds, zero_division=0))
+
+'''d) Adjust the parameters of the Tfidfvectorizer so that unigrams, bi-grams and
+tri-grams will be considered as features, limiting the total number of features to
+3000. Print the classification report as in 2(c) again using these parameters. '''
+
+'''in this part I will adjust the code I created on part B and C to include unigrams, bi-grams and tri-grams as features, to order to do that I will change the ngram_range parameter of TfidfVectorizer to (1, 3) which means it will consider unigrams, bi-grams and tri-grams as features.'''
+
+#added ngram_range(1,3) parameter to the vectorization step in the pipe_train_model function now it needs to be called again without writing a new func. 
+
+print("\n--- Part D: ngram_range (1,3) (Using unigrams, bigrams, and trigrams as features) ---\n")
+pipe_train_model(X_train, X_test, y_train, y_test, ngram_range=(1, 3))
+
+
+
+
