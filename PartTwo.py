@@ -15,6 +15,12 @@ from imblearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import MultinomialNB
 
+#for custom tokenizer in E
+import spacy
+nlp = spacy.load("en_core_web_sm")
+
+
+
 '''A) I. Read the hansard40000.csv dataset in the texts directory into a dataframe.
     - Change the 'Labour (Co-op)' value in the 'party' column to 'Labour'.
     - Check if the function is working by printing the first few rows.
@@ -162,48 +168,77 @@ is done correctly.
 the training set, and prints the macro-average f1 score and classification report.'''
 
 
-def pipe_train_model (X_train, X_test, y_train, y_test, ngram_range=(1,1)):
-    """Trains RandomForest and SVM pipelines with given ngram_range and prints classification reports."""  
+def pipe_train_model(X_train, X_test, y_train, y_test, ngram_range=(1,1), tokenizer=None):
+    """Trains RandomForest and SVM pipelines with given ngram_range and optional custom tokenizer, prints classification reports."""  
     # Random Forest Pipeline
     rf_pipe = Pipeline([
         ('tfidf', TfidfVectorizer(
-            ngram_range = ngram_range, #add this line to include n-grams and re-use the code part D
-            sublinear_tf=True, max_df=0.5, min_df=5, stop_words="english", max_features=3000)),
-        ('smote', SMOTE(random_state=26)), #added smote for oversampling
+            ngram_range=ngram_range, # add this line to include n-grams and re-use the code part D
+            tokenizer=tokenizer,     # add this line to include custom tokenizer and re-use the code part E
+            sublinear_tf=True, max_df=0.5, min_df=5, 
+            stop_words="english" if tokenizer is None else None, # if tokenizer is not None, no need to remove stop words part E
+            max_features=3000)),
+        ('smote', SMOTE(random_state=26)), # added smote for oversampling
         ('clf', RandomForestClassifier(n_estimators=300, class_weight='balanced', random_state=26))
     ])
     rf_pipe.fit(X_train, y_train)
     rf_preds = rf_pipe.predict(X_test)
     print("Random Forest Pipeline Macro F1:", f1_score(y_test, rf_preds, average='macro'))
-    #set zero_division=0 to avoid UndefinedMetricWarning
+    # set zero_division=0 to avoid UndefinedMetricWarning
     print("Random Forest Classification Report:\n", classification_report(y_test, rf_preds, zero_division=0))
 
 
     # SVM Pipeline with SMOTE
     svm_pipe = Pipeline([
         ('tfidf', TfidfVectorizer(
-            ngram_range=ngram_range, #add this line to include n-grams and re-use the code part D
-            sublinear_tf=True, max_df=0.5, min_df=5, stop_words="english", max_features=3000)),
-        ('smote', SMOTE(random_state=26)), #added smote for oversampling
+            ngram_range=ngram_range, # add this line to include n-grams and re-use the code part D
+            tokenizer=tokenizer,     # add this line to include custom tokenizer and re-use the code part E
+            sublinear_tf=True, max_df=0.5, min_df=5, 
+            stop_words="english" if tokenizer is None else None, # if tokenizer is not None, no need to remove stop words part E
+            max_features=3000)),
+        ('smote', SMOTE(random_state=26)), # added smote for oversampling
         ('clf', SVC(kernel='linear', class_weight='balanced', random_state=26))
     ])
     svm_pipe.fit(X_train, y_train)
     svm_preds = svm_pipe.predict(X_test)
     print("SVM Pipeline Macro F1:", f1_score(y_test, svm_preds, average='macro'))
-    #set zero_division=0 to avoid UndefinedMetricWarning
+    # set zero_division=0 to avoid UndefinedMetricWarning
     print("SVM Classification Report:\n", classification_report(y_test, svm_preds, zero_division=0))
 
 '''d) Adjust the parameters of the Tfidfvectorizer so that unigrams, bi-grams and
 tri-grams will be considered as features, limiting the total number of features to
 3000. Print the classification report as in 2(c) again using these parameters. '''
 
-'''in this part I will adjust the code I created on part B and C to include unigrams, bi-grams and tri-grams as features, to order to do that I will change the ngram_range parameter of TfidfVectorizer to (1, 3) which means it will consider unigrams, bi-grams and tri-grams as features.'''
+'''in this part I will adjust the code I created on part B and C to include unigrams, bi-grams and tri-grams as features, to order to do that i will change the ngram_range parameter of TfidfVectorizer to (1, 3) which means it will consider unigrams, bi-grams and tri-grams as features.'''
 
 #added ngram_range(1,3) parameter to the vectorization step in the pipe_train_model function now it needs to be called again without writing a new func. 
 
 print("\n--- Part D: ngram_range (1,3) (Using unigrams, bigrams, and trigrams as features) ---\n")
 pipe_train_model(X_train, X_test, y_train, y_test, ngram_range=(1, 3))
 
+''' E) Implement a new custom tokenizer and pass it to the tokenizer argument of
+Tfidfvectorizer. You can use this function in any way you like to try to achieve
+the best classification performance while keeping the number of features to no
+more than 3000, and using the same three classifiers as above. Print the clas-
+sification report for the best performing classifier using your tokenizer. Marks
+will be awarded both for a high overall classification performance, and a good
+trade-off between classification performance and efficiency (i.e., using fewer pa-
+rameters).'''
 
+def custom_tokenizer(text):
+    doc = nlp(text.lower())
+    return [token.text for token in doc if not token.is_stop and not token.is_punct]
 
+#Now I will use pipe_train_model function to train the models with the custom tokenizer
+print("\n--- Part E: Custom Tokenizer (Using Spacy) ---\n")
+pipe_train_model(X_train, X_test, y_train, y_test, ngram_range=(1, 2))  # Using the custom tokenizer with n-grams (1,2)
+
+# Split the raw text and labels, not the vectorized features
+X = df['speech']
+y = df['party']
+X_train_text, X_test_text, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=26, stratify=y
+)
+
+pipe_train_model(X_train_text, X_test_text, y_train, y_test, ngram_range=(1, 3))
 
