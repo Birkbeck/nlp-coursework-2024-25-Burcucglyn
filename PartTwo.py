@@ -20,7 +20,7 @@ import pandas as pd
 '''
 
 def read_hansard(path=Path.cwd() / "texts" / "hansard40000.csv"):
-    """Reads the hansard40000.csv dataset and processes it according to the specified criteria."""
+    """Reads the hansard40000.csv dataset"""
     df = pd.read_csv(path)
     # Change the 'Labour (Co-op)' value in 'party' column to 'Labour'
     df['party'] = df['party'].replace('Labour (Co-op)', 'Labour')
@@ -30,3 +30,25 @@ def read_hansard(path=Path.cwd() / "texts" / "hansard40000.csv"):
 df = read_hansard("/Users/burdzhuchaglayan/Desktop/Msci_DS/summer term/natural language processing/coursework needs to be submitted at 3rd of july/p2-texts/hansard40000.csv")
 print(df.head())
 
+'''A) II. Remove any rows where the value of the party column is not one of the main 4 party and remove the 'Speaker' value.'''
+
+#Print the parties in the party column to see which ones are present
+print(df['party'].unique())
+
+''' output: ['Labour' 'Conservative' 'Liberal Democrat'
+ 'Speaker' 'Democratic Unionist Party' 'Independent' 
+ 'Social Democratic & Labour Party' 'Alliance' 'Green Party' 'Alba Party']'''
+
+#4 main parties are (googled it) :  'Labour' ,'Conservative' , 'Liberal Democrat', 'Independent' 
+
+def filter_parties(df):
+    """Filters the dataframe to keep only the main 4 parties and removes the 'Speaker' value."""
+    #to see the party column values used the print(df['party'].unique()) function
+    main_parties = ['Labour', 'Conservative', 'Liberal Democrat', 'Independent']
+    #remove rows where the party is not in the main 4 and remove the 'Speaker' value
+    df = df[df['party'] != 'Speaker']
+    return df
+
+# Check if the function is working
+df = filter_parties(df)
+print(df.shape)
