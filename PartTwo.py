@@ -63,3 +63,13 @@ def filter_speech(df):
 # Check if the function is working
 df = filter_speech(df)
 print(df['speech_class'].unique())
+
+'''A) IV. Remove any rows where the text in the speech column is less than 1000 characters long.'''
+def filter_speech_length(df):
+    """Filters the dataframe to keep only rows where the speech text is at least 1000 characters long."""
+    df = df[df['speech'].str.len() >= 1000]  # Keep only rows  length of speech is at least 1000 characters
+    return df
+
+# Check if the function is working
+df = filter_speech_length(df)
+print(df.shape)  # Print the shape of the dataframe to see how many rows are left
