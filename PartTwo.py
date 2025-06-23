@@ -110,7 +110,7 @@ def classifiers_models (X_train, X_test, y_train, y_test):
     """
 
     # Random Forest
-    rf_model = RandomForestClassifier(n_estimators=300, random_state=26)
+    rf_model = RandomForestClassifier(n_estimators=300, random_state=26, class_weight='balanced') #additional add for non biased model added class_weight='balanced'
     rf_model.fit(X_train, y_train)
     rf_predictions = rf_model.predict(X_test)
     rf_f1_score = f1_score(y_test, rf_predictions, average='macro')
@@ -118,7 +118,7 @@ def classifiers_models (X_train, X_test, y_train, y_test):
     print("Random Forest Classification Report:\n", classification_report(y_test, rf_predictions)) 
 
     # Linear SVM
-    svm_model = SVC(kernel='linear', random_state=26)
+    svm_model = SVC(kernel='linear', random_state=26, class_weight='balanced') #additional add for non biased model added class_weight='balanced'
     svm_model.fit(X_train, y_train)
     svm_predictions = svm_model.predict(X_test)
     svm_f1_score = f1_score(y_test, svm_predictions, average='macro')
@@ -127,3 +127,9 @@ def classifiers_models (X_train, X_test, y_train, y_test):
 
 # Usage:
 classifiers_models(X_train, X_test, y_train, y_test)
+
+''' After running the code, got warnings: UndefinedMetricWarning for some classes 
+(precision and F-score set to 0.0 when no predicted samples). 
+Checked and found 'Independent','Liberal Democrat' have very few samples, 
+so the model ignores them and gets biased toward majority classes. 
+To fix, can try class weighting in RandomForest and SVM (class_weight='balanced').'''
