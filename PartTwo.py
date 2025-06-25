@@ -152,9 +152,9 @@ def vector_speech_ngram(df, ngram_range=(1,1), max_features=3000):
     vectorizer= TfidfVectorizer(
         ngram_range=ngram_range, #soo I can re-use the func at the part E aswell
         sublinear_tf=True, max_df=0.5, min_df=5, 
-        stop_words="english"
-          max_features=max_features
-          tokenizer= None #I won't use custom tokenizer here that's why none for passed tokenizer for part E
+        stop_words="english",
+        max_features=max_features,
+        tokenizer= None #I won't use custom tokenizer here that's why none for passed tokenizer for part E
     )
     #fitting the vectorizer to the speeches
     X= vectorizer.fit_transform(df['speech'])
