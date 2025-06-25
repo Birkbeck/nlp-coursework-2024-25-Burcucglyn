@@ -153,7 +153,7 @@ def subjects_by_verb_pmi(doc, target_verb, n=10):
                 pmi_scores.append((subj, verb, pmi))  # store the subject, verb, and PMI score
     # Sort by PMI score in descending order and return the top n
     pmi_scores.sort(key=lambda x: x[2], reverse=True)
-    return pmi_scores[:n]  # returns the top n subject-verb pairs
+    return pmi_scores[:n]  # returns the top n subject-verb pairs(additionally with pmi score)
 
 
 
@@ -190,23 +190,22 @@ if __name__ == "__main__":
     path = Path.cwd() / "p1-texts" / "novels"
     print(path)
     df = read_novels("/Users/burdzhuchaglayan/Desktop/Msci_DS/summer term/natural language processing/coursework needs to be submitted at 3rd of july/p1-texts/novels") # this line will fail until you have completed the read_novels function above.
-    #print(df.head())
+    print(df.head())
     nltk.download("cmudict")
-    # parse(df, out_name="parsed.pickle")  # this line will fail until you have completed the parse function above.
-    
-   # print(get_ttrs(df))
-   # print(get_fks(df))
-    df = pd.read_pickle(Path.cwd() / "pickles" / "parsed.pickle")
-    # print(df.head())
-    # print(adjective_counts(df))
+    parse(df, out_name="parsed.pickle")  # this line will fail until you have completed the parse function above.
+    print(get_ttrs(df))
+    print(get_fks(df))
+   # df = pd.read_pickle(Path.cwd() / "pickles" / "parsed.pickle")
+    print(df.head())
+    #print(adjective_counts(df))
 
     #test adjective_counts
-    # for i, row in df.iterrows():
-    #     print(row["title"])
-    #     print(adjective_counts(row["parsed"]))
-    #     print("\n")
+    for i, row in df.iterrows():
+        print(row["title"])
+        print(adjective_counts(row["parsed"]))
+        print("\n")
     
-    #test subjects_by_verb_count
+    # test subjects_by_verb_count
     for i, row in df.iterrows():
         print(row["title"])
         print(subjects_by_verb_count(row["parsed"], "hear"))  # Change "hear" to any verb you want to test
