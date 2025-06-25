@@ -117,8 +117,8 @@ def classifiers_models (X_train, X_test, y_train, y_test):
     rf_model.fit(X_train, y_train)
     rf_predictions = rf_model.predict(X_test)
     rf_f1_score = f1_score(y_test, rf_predictions, average='macro')
-    print("Random Forest Macro F1 Score:", rf_f1_score)
-    print("Random Forest Classification Report:\n", classification_report(y_test, rf_predictions, zero_division=0)) 
+    print("Random Forest Macro F1 Score:", rf_f1_score) 
+    print("Random Forest Classification Report:\n", classification_report(y_test, rf_predictions, zero_division=0)) #added zero_division=0 to avoid UndefinedMetricWarning
 
     # Linear SVM
     svm_model = SVC(kernel='linear', random_state=26, class_weight='balanced') #additional add for non biased model added class_weight='balanced'
@@ -126,7 +126,7 @@ def classifiers_models (X_train, X_test, y_train, y_test):
     svm_predictions = svm_model.predict(X_test)
     svm_f1_score = f1_score(y_test, svm_predictions, average='macro')
     print("SVM Macro F1 Score:", svm_f1_score)
-    print("SVM Classification Report:\n", classification_report(y_test, svm_predictions, zero_division=0))
+    print("SVM Classification Report:\n", classification_report(y_test, svm_predictions, zero_division=0)) #added zero_division=0 to avoid UndefinedMetricWarning
 
 # check
 classifiers_models(X_train, X_test, y_train, y_test)
@@ -141,18 +141,47 @@ classifiers_models(X_train, X_test, y_train, y_test)
 # # Now train your models on the resampled data
 # classifiers_models(X_train_resampled, X_test, y_train_resampled, y_test)
 
+# ========== PART D N-gram according to Machine Learning Method ==========
+''' Testing Machine learning Method  --- '''
+print("\n========== PART D std ML - ngram_range(1,3) Using unigrams, bigrams, and trigrams as features  ==========")
+
+#starting with the vectorization using TfidfVectorizer with ngram_range=(1,3) and max_features=3000
+def vector_speech_ngram(df, ngram_range=(1,3), max_features=3000):
+    '''Vectorizes the speeches using TfidfVectorizer with ngram_range and max_features.
+    '''
+    vectorizer= TfidfVectorizer(
+        ngram_range=ngram_range, #soo I can re-use the func at the part E aswell
+        sublinear_tf=True, max_df=0.5, min_df=5, stop_words="english", max_features=max_features
+    )
+    #fitting the vectorizer to the speeches
+    X= vectorizer.fit_transform(df['speech'])
+    y = df['party']
+
+    #need to split the data into train 0.2 and the rest test
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=26, stratify=y)
+    feature_names = vectorizer.get_feature_names_out()
+    #need to return the train and test sets in each axess plus the feature names
+    return X_train, X_test, y_train, y_test, feature_names
+# Check the vectorization function
+X_train_ngram, X_test_ngram, y_train_ngram, y_test_ngram, feature_names_ngram = vector_speech_ngram(df, ngram_range=(1,3))
+classifiers_models(X_train_ngram, X_test_ngram, y_train_ngram, y_test_ngram)  # Using the classifiers_models function from Part C
+
+
+
 
 # ========== PART D,E: Scikit- Pipelines ==========
 '''Improved pipeline with SMOTE for later parts (D/E) --- '''
 print("\n========== PART D,E: Improved pipeline with SMOTE  ==========")
+
+
 
 def pipe_train_model(X_train, X_test, y_train, y_test, ngram_range=(1,1), tokenizer=None):
     """Trains RandomForest and SVM pipelines with given ngram_range and optional custom tokenizer, prints classification reports."""  
     # Random Forest Pipeline
     rf_pipe = Pipeline([
         ('tfidf', TfidfVectorizer(
-            ngram_range=ngram_range, # add this line to include n-grams and re-use the code part D
-            tokenizer=tokenizer,     # add this line to include custom tokenizer and re-use the code part E
+            ngram_range=ngram_range, # added this line to include n-grams and re-use the code part D
+            tokenizer=tokenizer,     # added  this line to include custom tokenizer and re-use the code part E
             sublinear_tf=True, max_df=0.5, min_df=5, 
             stop_words="english" if tokenizer is None else None, # if tokenizer is not None, no need to remove stop words part E
             max_features=3000)),
@@ -162,15 +191,15 @@ def pipe_train_model(X_train, X_test, y_train, y_test, ngram_range=(1,1), tokeni
     rf_pipe.fit(X_train, y_train)
     rf_preds = rf_pipe.predict(X_test)
     print("Random Forest Pipeline Macro F1:", f1_score(y_test, rf_preds, average='macro'))
-    # set zero_division=0 to avoid UndefinedMetricWarning
+    # added zero_division=0 to avoid UndefinedMetricWarning
     print("Random Forest Classification Report:\n", classification_report(y_test, rf_preds, zero_division=0))
 
 
     # SVM Pipeline with SMOTE
     svm_pipe = Pipeline([
         ('tfidf', TfidfVectorizer(
-            ngram_range=ngram_range, # add this line to include n-grams and re-use the code part D
-            tokenizer=tokenizer,     # add this line to include custom tokenizer and re-use the code part E
+            ngram_range=ngram_range, # added this line to include n-grams and re-use the code part D
+            tokenizer=tokenizer,     # added this line to include custom tokenizer and re-use the code part E
             sublinear_tf=True, max_df=0.5, min_df=5, 
             stop_words="english" if tokenizer is None else None, # if tokenizer is not None, no need to remove stop words part E
             max_features=3000)),
@@ -180,7 +209,7 @@ def pipe_train_model(X_train, X_test, y_train, y_test, ngram_range=(1,1), tokeni
     svm_pipe.fit(X_train, y_train)
     svm_preds = svm_pipe.predict(X_test)
     print("SVM Pipeline Macro F1:", f1_score(y_test, svm_preds, average='macro'))
-    # set zero_division=0 to avoid UndefinedMetricWarning
+    # added zero_division=0 to avoid UndefinedMetricWarning
     print("SVM Classification Report:\n", classification_report(y_test, svm_preds, zero_division=0))
 
 # passing split the raw text and labels for pipeline usage par D and E 
