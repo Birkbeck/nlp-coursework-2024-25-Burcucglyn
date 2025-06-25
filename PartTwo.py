@@ -146,12 +146,15 @@ classifiers_models(X_train, X_test, y_train, y_test)
 print("\n========== PART D std ML - ngram_range(1,3) Using unigrams, bigrams, and trigrams as features  ==========")
 
 #starting with the vectorization using TfidfVectorizer with ngram_range=(1,3) and max_features=3000
-def vector_speech_ngram(df, ngram_range=(1,3), max_features=3000):
+def vector_speech_ngram(df, ngram_range=(1,1), max_features=3000): 
     '''Vectorizes the speeches using TfidfVectorizer with ngram_range and max_features.
     '''
     vectorizer= TfidfVectorizer(
         ngram_range=ngram_range, #soo I can re-use the func at the part E aswell
-        sublinear_tf=True, max_df=0.5, min_df=5, stop_words="english", max_features=max_features
+        sublinear_tf=True, max_df=0.5, min_df=5, 
+        stop_words="english"
+          max_features=max_features
+          tokenizer= None #I won't use custom tokenizer here that's why none for passed tokenizer for part E
     )
     #fitting the vectorizer to the speeches
     X= vectorizer.fit_transform(df['speech'])
@@ -168,6 +171,14 @@ classifiers_models(X_train_ngram, X_test_ngram, y_train_ngram, y_test_ngram)  # 
 
 
 
+# ========== PART E:Standard ML tokenizer= None ==========
+''' Testing Machine learning Method, tokenizer=none  --- '''
+print("\n========== PART , Standard ML  ==========")
+
+print("\n--- Part E: Standard ML  ngram_range(1,2) ---\n")
+X_train_cust, X_test_cust, y_train_cust, y_test_cust, feat_names_cust = vector_speech_ngram(
+    df, ngram_range=(1,2))
+classifiers_models(X_train_cust, X_test_cust, y_train_cust, y_test_cust)
 
 # ========== PART D,E: Scikit- Pipelines ==========
 '''Improved pipeline with SMOTE for later parts (D/E) --- '''
