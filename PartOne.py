@@ -16,6 +16,7 @@ tqdm.pandas()
 # import counter for counting word frequencies
 from collections import Counter
 import math #for pmi calculations
+import os
 
 
 
@@ -195,7 +196,7 @@ if __name__ == "__main__":
     parse(df, out_name="parsed.pickle")  # this line will fail until you have completed the parse function above.
     print(get_ttrs(df))
     print(get_fks(df))
-   # df = pd.read_pickle(Path.cwd() / "pickles" / "parsed.pickle")
+    df = pd.read_pickle(Path.cwd() / "pickles" / "parsed.pickle")
     print(df.head())
     #print(adjective_counts(df))
 
@@ -216,5 +217,9 @@ if __name__ == "__main__":
         print(row["title"])
         print(subjects_by_verb_pmi(row["parsed"], "hear"))
         print("\n")
+
+
+    # Checking if the parsed DataFrame is exists
+    print(os.path.exists("pickles/parsed.pickle"))
 
 
