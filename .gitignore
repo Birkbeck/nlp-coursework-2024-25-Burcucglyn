@@ -2,6 +2,7 @@
 p1-texts/novels/
 p2-texts/
 *.pickle
+*.DS_Store
 
 
 # Byte-compiled / optimized / DLL files
